@@ -18,7 +18,6 @@
  */
 const BB = require("bluebird");
 const ms = require("./lib/multiscript");
-
 const ss = require("./lib/singlescript");
 
 const accountType = require("../shared/accountType");
@@ -39,12 +38,16 @@ class CloudflareDeploy {
         BB.bind(this)
           .then(this.checkAccountType)
           .then(async isMultiScript => {
+            /*
             const isDuplicateRoutesPresent = await this.checkIfDuplicateRoutes(
               isMultiScript
             );
+
             if (isDuplicateRoutesPresent) {
               return BB.reject("Duplicate routes pointing to different script");
             }
+            */
+            
             if (this.getInvalidScriptNames()) {
               console.log(this.getInvalidScriptNames());
               return BB.reject(

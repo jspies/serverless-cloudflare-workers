@@ -49,28 +49,35 @@ module.exports = {
       contentType: `application/javascript`
     });
   },
-  async multiScriptDeploy(funcObj) {
-    return await BB.bind(this).then(async () => {
-      const { workers: scriptOptions, zoneId } = this.provider.config;
 
-      if (scriptOptions === undefined || scriptOptions === null) {
-        throw new Error(
-          "Incorrect template being used for a MultiScript user "
-        );
+  getRoutes(events) {
+    return events.map(function(event) {
+      if (event.http) {
+        return event.http.url;
       }
+    });
+  },
+
+  async multiScriptDeploy(funcObj) {
+    return BB.bind(this)
+    .then(async () => {
+
+      const { zoneId } = this.provider.config;
 
       let workerScriptResponse;
       let routesResponse = [];
+
       const scriptContents = generateCode(funcObj);
 
-      const { worker: scriptName } = funcObj;
+      const { name: scriptName } = funcObj;
 
       const response = await this.multiScriptWorkerAPI(
         scriptContents,
         scriptName
       );
+
       workerScriptResponse = response;
-      const allRoutes = scriptOptions[scriptName]["routes"];
+      const allRoutes = this.getRoutes(funcObj.events);
 
       for (const pattern of allRoutes) {
         this.serverless.cli.log(`deploying route: ${pattern} `);
@@ -90,23 +97,25 @@ module.exports = {
   },
 
   async multiScriptDeployAll() {
-        
-    const { workers: scriptOptions } = this.provider.config;
-    if (scriptOptions === undefined || scriptOptions === null) {
+
+    const functions = this.serverless.service.getAllFunctions();
+
+    if (typeof(functions) === 'undefined' || functions === null) {
       throw new Error("Incorrect template being used for a MultiScript user ");
     }
-    const scriptNames = Object.keys(scriptOptions);
+
     let workerResponse = [];
     let routesResponse = [];
 
-    for (const scriptName of scriptNames) {
+    for (const scriptName of functions) {
       const functionObject = this.getFunctionObjectFromScriptName(scriptName);
 
-      if (this.provider.config.webpack) {
+      if (functionObject.webpack) {
         await webpack.pack(this.serverless, functionObject);
       }
 
       this.serverless.cli.log(`deploying script: ${scriptName}`);
+
       const {
         workerScriptResponse,
         routesResponse: rResponse

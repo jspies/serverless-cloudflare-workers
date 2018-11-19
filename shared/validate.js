@@ -94,9 +94,10 @@ module.exports = {
     }
     return false;
   },
+  
   getInvalidScriptNames() {
-    const { workers } = this.provider.config;
-    const notValidScriptNames = Object.keys(workers).find(scriptName => {
+    const functions = this.serverless.service.getAllFunctions();
+    const notValidScriptNames = functions.find(scriptName => {
       return !this.isValidScriptName(scriptName);
     });
     return notValidScriptNames;

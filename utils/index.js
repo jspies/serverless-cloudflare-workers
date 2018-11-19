@@ -19,7 +19,7 @@
 module.exports = {
   getFunctionObject(paramName) {
     let funParam = paramName || this.options.function;
-    if (funParam === undefined) {
+    if (typeof(funParam) === 'undefined') {
       funParam = this.options.f;
     }
     return this.serverless.service.getFunction(funParam);
@@ -27,8 +27,7 @@ module.exports = {
   getFunctionObjectFromScriptName(scriptName) {
     const functionName = this.serverless.service.getAllFunctions().find(f => {
       const func = this.serverless.service.getFunction(f);
-      const { worker } = func;
-      return worker == scriptName;
+      return func.name === scriptName;
     });
 
     return this.getFunctionObject(functionName);
