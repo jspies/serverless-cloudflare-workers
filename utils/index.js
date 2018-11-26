@@ -22,7 +22,9 @@ module.exports = {
     if (typeof(funParam) === 'undefined') {
       funParam = this.options.f;
     }
-    return this.serverless.service.getFunction(funParam);
+    if (funParam) {
+      return this.serverless.service.getFunction(funParam);
+    } else return null;
   },
   getFunctionObjectFromScriptName(scriptName) {
     const functionName = this.serverless.service.getAllFunctions().find(f => {

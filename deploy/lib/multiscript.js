@@ -20,6 +20,7 @@ const sdk = require("../../provider/sdk");
 const { generateCode } = require("./workerScript");
 const BB = require("bluebird");
 const webpack = require("../../utils/webpack");
+const ms = require("../../shared/multiscript");
 
 module.exports = {
   async multiScriptWorkerAPI(scriptContents, scriptName) {
@@ -42,22 +43,6 @@ module.exports = {
     });
   },
 
-  async getRoutesMultiScript(zoneId) {
-    return await sdk.cfApiCall({
-      url: `https://api.cloudflare.com/client/v4/zones/${zoneId}/workers/routes`,
-      method: `GET`,
-      contentType: `application/javascript`
-    });
-  },
-
-  getRoutes(events) {
-    return events.map(function(event) {
-      if (event.http) {
-        return event.http.url;
-      }
-    });
-  },
-
   async multiScriptDeploy(funcObj) {
     return BB.bind(this)
     .then(async () => {
@@ -77,7 +62,7 @@ module.exports = {
       );
 
       workerScriptResponse = response;
-      const allRoutes = this.getRoutes(funcObj.events);
+      const allRoutes = ms.getRoutes(funcObj.events);
 
       for (const pattern of allRoutes) {
         this.serverless.cli.log(`deploying route: ${pattern} `);
